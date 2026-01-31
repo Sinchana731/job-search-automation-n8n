@@ -1,0 +1,314 @@
+{
+  "name": "job finder",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "linkedin-job-finder",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "cc9c80a4-5304-46db-a8a0-fe522724c3dc",
+      "name": "Webhook",
+      "webhookId": "12c5f999-c5be-46c7-8349-36973f1f1d2b"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "d5fdb75a-3525-47ed-8a7f-c31ab8ae2163",
+              "name": "search_keywords",
+              "value": "={{$json.body.job_title}}",
+              "type": "string"
+            },
+            {
+              "id": "5b9f7e6d-fadb-4680-804b-5640c60f7e6c",
+              "name": "location",
+              "value": "={{$json.body.city}}",
+              "type": "string"
+            },
+            {
+              "id": "327edb8b-ba9b-48d1-b320-0c294e8a3b86",
+              "name": "country",
+              "value": "={{$json.body.country}}",
+              "type": "string"
+            },
+            {
+              "id": "377b0a8b-dcd8-4ae1-b5ba-c05e1523dc7d",
+              "name": "job_type",
+              "value": "={{$json.body.job_type}}",
+              "type": "string"
+            },
+            {
+              "id": "5e3339d5-af98-43ed-9883-9b245ae4115f",
+              "name": "limit",
+              "value": "20",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        208,
+        0
+      ],
+      "id": "042786d5-08c6-467e-a509-25fbec560b8e",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "url": "https://api.adzuna.com/v1/api/jobs/in/search/1",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "app_id",
+              "value": "db73444f"
+            },
+            {
+              "name": "app_key",
+              "value": "8ebec46ae97b7502a3260352079dd6c1"
+            },
+            {
+              "name": "what",
+              "value": "={{ $json.search_keywords }}"
+            },
+            {
+              "name": "where",
+              "value": "=Bengaluru"
+            },
+            {
+              "name": "results_per_page",
+              "value": "={{ $json.limit }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        416,
+        0
+      ],
+      "id": "0ca1883b-a66b-4612-aa74-56b5f3c5c881",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get the Adzuna API response from the previous node\nconst adzunaResponse = items[0].json;\n\n// Safety check\nif (!adzunaResponse.results) {\n  throw new Error(\"No job results found from Adzuna\");\n}\n\n// Extract jobs array\nconst jobs = adzunaResponse.results;\n\n// Convert each job into one item (row)\nreturn jobs.map(job => ({\n  json: {\n    job_title: job.title || \"\",\n    company_name: job.company?.display_name || \"\",\n    location: job.location?.display_name || \"\",\n    job_description: job.description || \"\",\n    apply_link: job.redirect_url || \"\",\n    search_keyword: $node[\"Edit Fields\"].json.search_keywords,\n    searched_city: $node[\"Edit Fields\"].json.location,\n    fetched_at: new Date().toISOString()\n  }\n}));\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        592,
+        0
+      ],
+      "id": "5a0cc15f-06d9-4805-ac65-efe9bf381a38",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1aPA__dF-jEfPCnxSGJ2xyj43lJCfY10eK7U8jqxjE2Y",
+          "mode": "list",
+          "cachedResultName": "Job Finder",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1aPA__dF-jEfPCnxSGJ2xyj43lJCfY10eK7U8jqxjE2Y/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1aPA__dF-jEfPCnxSGJ2xyj43lJCfY10eK7U8jqxjE2Y/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Company Name": "={{ $json.company_name }}",
+            "Job Detail": "={{ $json.job_description }}",
+            "Location": "={{ $json.location }}",
+            "Apply Link": "={{ $json.apply_link }}",
+            "Job Type": "={{ $json.job_title }}",
+            "Fetched At": "={{ $json.fetched_at }}",
+            "Search City": "={{ $json.searched_city }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Job Finder",
+              "displayName": "Job Finder",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Company Name",
+              "displayName": "Company Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Job Detail",
+              "displayName": "Job Detail",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Location",
+              "displayName": "Location",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Company URL",
+              "displayName": "Company URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Apply Link",
+              "displayName": "Apply Link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Job Type",
+              "displayName": "Job Type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Search City",
+              "displayName": "Search City",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Fetched At",
+              "displayName": "Fetched At",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        800,
+        0
+      ],
+      "id": "81cfc55d-a78b-4096-86c5-6beb0c36d02c",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "wd1p7RA7EfBu1U4J",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "e1d07238-9a5a-43ce-aba3-0edb1fd68874",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "46ecc40c75c843c531e040ff874ac402ded83a37952f478a3c98ffa2dc0b1a74"
+  },
+  "id": "O6YOiVSwGNxn57ap",
+  "tags": []
+}
