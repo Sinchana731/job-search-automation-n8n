@@ -1,6 +1,8 @@
 📌 Job Search Automation (n8n)
 
 This project is an end-to-end automation workflow built using n8n that fetches job listings from a public jobs API and stores structured results in Google Sheets.
+<img width="1366" height="621" alt="Screenshot 2026-01-31 155400" src="https://github.com/user-attachments/assets/6cd6b388-f53c-4120-b842-b1aa9c18ecc0" />
+<img width="1641" height="698" alt="Screenshot 2026-01-31 155440" src="https://github.com/user-attachments/assets/cef07aa6-7233-422e-8738-856baab44460" />
 
 🔧 Workflow Overview
 
